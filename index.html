@@ -1,571 +1,266 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Rumo ao Topo - Gestão de Estudos</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
-    <style>
-        body {
-            font-family: 'Inter', sans-serif;
-            background-color: #0A192F; /* Azul escuro principal */
-            color: #E6F1FF;
-        }
-        .main-bg { background-color: #0A192F; }
-        .primary-bg { background-color: #172A45; }
-        .accent-bg { background-color: #FF8C00; } /* Amarelo alaranjado */
-        .accent-text { color: #FF8C00; }
-        .accent-border { border-color: #FF8C00; }
-        .secondary-text { color: #8892B0; }
-        .card { background-color: #172A45; border-radius: 8px; border: 1px solid #233554; }
-        .btn {
-            background-color: #FF8C00;
-            color: #0A192F;
-            font-weight: 600;
-            padding: 10px 20px;
-            border-radius: 6px;
-            transition: all 0.3s ease;
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-        }
-        .btn:hover {
-            opacity: 0.9;
-            transform: translateY(-2px);
-            box-shadow: 0 4px 10px rgba(255, 140, 0, 0.2);
-        }
-        .btn-secondary {
-             background-color: #233554;
-             color: #E6F1FF;
-        }
-        .btn-secondary:hover {
-            background-color: #304a75;
-            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
-        }
-        .input-field, .select-field {
-            background-color: #0A192F;
-            border: 1px solid #233554;
-            color: #E6F1FF;
-            border-radius: 6px;
-            padding: 10px;
-            width: 100%;
-        }
-        .input-field:focus, .select-field:focus {
-            outline: none;
-            border-color: #FF8C00;
-            box-shadow: 0 0 0 2px rgba(255, 140, 0, 0.3);
-        }
-        [v-cloak] { display: none; }
-        .modal-overlay {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background-color: rgba(0, 0, 0, 0.7);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            z-index: 50;
-        }
-        .table-input {
-            background-color: #233554;
-            border: 1px solid #304a75;
-            color: #E6F1FF;
-            border-radius: 4px;
-            padding: 6px 8px;
-            width: 70px;
-            text-align: center;
-        }
-        .table-input:focus {
-            background-color: #0A192F;
-            border-color: #FF8C00;
-            outline: none;
-        }
-    </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Portal RAT - Demo Funcional</title>
+<style>
+body {font-family: Arial; margin:0; background:#030d30; color:white;}
+header {background:#fcc80d;color:#030d30;padding:15px;text-align:center;}
+nav {background:#222;padding:10px;display:flex;justify-content:center;gap:20px;}
+nav button {background:#fcc80d;color:#030d30;border:none;padding:8px 16px;border-radius:6px;cursor:pointer;}
+section {padding:20px;}
+.page {display:none;}
+.page.active{display:block;}
+input,button,textarea,select {width:100%;padding:8px;margin:6px 0;border-radius:6px;border:none;}
+button {background:#fcc80d;color:#030d30;font-weight:bold;cursor:pointer;}
+.card{background:#111;padding:15px;border-radius:12px;margin:10px 0;}
+.card.destaque{border:2px solid #fcc80d;}
+table{width:100%;border-collapse:collapse;}
+td,th{border:1px solid #fff;padding:6px;text-align:center;}
+</style>
 </head>
-<body class="main-bg antialiased">
+<body>
 
-    <div id="app" v-cloak>
-        <!-- Notificação Global -->
-        <div v-if="notification.message" :class="notification.type === 'success' ? 'bg-green-500' : 'bg-red-500'" class="fixed top-5 right-5 text-white py-2 px-4 rounded-lg shadow-lg z-50 transition-all duration-300">
-            <i :class="notification.type === 'success' ? 'fas fa-check-circle' : 'fas fa-exclamation-circle'" class="mr-2"></i>
-            {{ notification.message }}
-        </div>
-        
-        <!-- Tela de Login -->
-        <div id="login-view" v-if="currentView === 'login'" class="min-h-screen flex items-center justify-center p-4">
-            <div class="w-full max-w-md card p-8 space-y-6">
-                <div class="text-center">
-                    <h1 class="text-3xl font-bold accent-text">Rumo ao Topo</h1>
-                    <p class="secondary-text mt-2">Plataforma de Gestão de Estudos</p>
-                </div>
-                <form @submit.prevent="login" class="space-y-4">
-                    <div>
-                        <label for="email" class="block text-sm font-medium secondary-text">Email</label>
-                        <input type="email" v-model="loginForm.email" id="email" class="input-field mt-1" required>
-                    </div>
-                    <div>
-                        <label for="password" class="block text-sm font-medium secondary-text">Senha</label>
-                        <input type="password" v-model="loginForm.password" id="password" class="input-field mt-1" required>
-                    </div>
-                    <button type="submit" class="btn w-full">
-                        <i class="fas fa-sign-in-alt mr-2"></i> Entrar
-                    </button>
-                </form>
-            </div>
-        </div>
-        
-        <!-- Carregando... -->
-        <div v-if="currentView === 'loading'" class="min-h-screen flex items-center justify-center">
-             <i class="fas fa-spinner fa-spin text-4xl accent-text"></i>
-        </div>
+<header>
+<h1>🚀 RAT - Rumo ao Topo (Demo)</h1>
+</header>
 
-        <!-- Portal Principal (Admin ou Aluno) -->
-        <div id="main-portal" v-if="currentView === 'admin' || currentView === 'student'" class="min-h-screen md:flex">
-            <!-- Sidebar -->
-            <aside class="w-full md:w-64 primary-bg p-4 md:p-6 flex-shrink-0 md:flex md:flex-col">
-                <div class="text-center mb-8">
-                    <h1 class="text-2xl font-bold accent-text">Rumo ao Topo</h1>
-                    <p class="secondary-text text-sm">{{ user.isAdmin ? 'Portal do Administrador' : 'Portal do Aluno' }}</p>
-                </div>
-                <nav class="space-y-2 flex-grow">
-                    <!-- Menu Admin -->
-                    <template v-if="user.isAdmin">
-                        <a href="#" @click.prevent="activeTab = 'dashboard'" :class="{'accent-bg text-gray-900 font-bold': activeTab === 'dashboard', 'hover:bg-blue-900/50': activeTab !== 'dashboard'}" class="flex items-center p-3 rounded-lg transition-colors">
-                            <i class="fas fa-tachometer-alt w-6 text-center"></i><span class="ml-3">Dashboard</span>
-                        </a>
-                        <a href="#" @click.prevent="activeTab = 'members'" :class="{'accent-bg text-gray-900 font-bold': activeTab === 'members', 'hover:bg-blue-900/50': activeTab !== 'members'}" class="flex items-center p-3 rounded-lg transition-colors">
-                            <i class="fas fa-users w-6 text-center"></i><span class="ml-3">Membros</span>
-                        </a>
-                        <a href="#" @click.prevent="activeTab = 'grades'" :class="{'accent-bg text-gray-900 font-bold': activeTab === 'grades', 'hover:bg-blue-900/50': activeTab !== 'grades'}" class="flex items-center p-3 rounded-lg transition-colors">
-                           <i class="fas fa-graduation-cap w-6 text-center"></i><span class="ml-3">Lançar Notas</span>
-                        </a>
-                    </template>
-                </nav>
-                <div class="mt-auto pt-8">
-                     <div class="text-center secondary-text text-sm mb-4">
-                        <p>Logado como:</p>
-                        <p class="font-semibold text-white truncate">{{ user.email }}</p>
-                    </div>
-                    <button @click="logout" class="btn btn-secondary w-full">
-                        <i class="fas fa-sign-out-alt mr-2"></i> Sair
-                    </button>
-                </div>
-            </aside>
+<nav>
+<button onclick="showPage('home')">Home</button>
+<button onclick="showPage('login')">Login</button>
+<button onclick="showPage('member')">Portal Aluno</button>
+<button onclick="showPage('admin')">Portal Admin</button>
+</nav>
 
-            <!-- Conteúdo Principal -->
-            <main class="flex-1 p-6 md:p-10 main-bg overflow-y-auto">
-                <h1 class="text-3xl font-bold mb-6 text-white">Olá, {{ user.email.split('@')[0] }}!</h1>
-                
-                <div v-if="activeTab === 'dashboard'">
-                     <h2 class="text-2xl font-bold accent-text mb-4">Dashboard</h2>
-                     <p class="secondary-text">Visão geral do sistema. Funcionalidades futuras aparecerão aqui.</p>
-                </div>
-                
-                 <!-- Aba de Membros (Admin) -->
-                <div v-if="user.isAdmin && activeTab === 'members'">
-                   <h2 class="text-2xl font-bold accent-text mb-4">Gerenciamento de Membros</h2>
-                   <div class="card p-6">
-                        <button @click="showAddMemberModal = true" class="btn mb-4">
-                            <i class="fas fa-user-plus mr-2"></i> Adicionar Membro
-                        </button>
-                        <div class="overflow-x-auto">
-                            <table class="w-full text-left">
-                                <thead class="border-b border-gray-700">
-                                    <tr>
-                                        <th class="p-3">Email</th>
-                                        <th class="p-3">Ações</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    <tr v-for="member in members" :key="member.uid" class="border-b border-gray-800 hover:bg-gray-800/50">
-                                        <td class="p-3">{{ member.email }}</td>
-                                        <td class="p-3 space-x-2">
-                                            <button @click="prepareEditMember(member)" class="text-blue-400 hover:text-blue-300" title="Editar"><i class="fas fa-edit"></i></button>
-                                            <button @click="prepareRemoveMember(member)" class="text-red-500 hover:text-red-400" title="Remover"><i class="fas fa-trash"></i></button>
-                                        </td>
-                                    </tr>
-                                </tbody>
-                            </table>
-                        </div>
-                   </div>
-                </div>
+<!-- Home -->
+<section id="home" class="page active">
+<h2>Bem-vindo ao Portal RAT</h2>
+<p>Notas, ocorrências, listas, chat e mais!</p>
+<div class="card destaque">
+<h3>Premium</h3>
+<p>R$8,50 / mês ⭐ Mais popular</p>
+</div>
+<div class="card">
+<h3>Básico</h3>
+<p>R$6,50 / mês</p>
+</div>
+<div class="card">
+<h3>Avulso</h3>
+<p>R$0,85 - R$2,50</p>
+</div>
+</section>
 
-                <!-- Aba de Lançar Notas (Admin) -->
-                <div v-if="user.isAdmin && activeTab === 'grades'">
-                    <h2 class="text-2xl font-bold accent-text mb-4">Lançamento de Notas</h2>
-                    <div class="card p-6">
-                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
-                             <div>
-                                <label for="bimestre" class="block text-sm font-medium secondary-text">Selecione o Bimestre</label>
-                                <select v-model="grades.selectedBimestre" id="bimestre" class="select-field mt-1">
-                                    <option disabled value="">Escolha um bimestre</option>
-                                    <option v-for="b in bimestres" :key="b" :value="b">{{ b }}º Bimestre</option>
-                                </select>
-                            </div>
-                            <div>
-                                <label for="materia" class="block text-sm font-medium secondary-text">Selecione a Matéria</label>
-                                <select v-model="grades.selectedMateria" id="materia" class="select-field mt-1">
-                                    <option disabled value="">Escolha uma matéria</option>
-                                    <option v-for="m in materias" :key="m" :value="m">{{ m }}</option>
-                                </select>
-                            </div>
-                        </div>
+<!-- Login -->
+<section id="login" class="page">
+<h2>Login</h2>
+<div>
+<label>Email:</label>
+<input type="email" id="loginEmail">
+<label>Senha:</label>
+<input type="password" id="loginPass">
+<button onclick="login()">Entrar</button>
+<p id="loginMsg"></p>
+</div>
+</section>
 
-                        <div v-if="grades.isLoading" class="text-center p-8">
-                             <i class="fas fa-spinner fa-spin text-2xl accent-text"></i>
-                             <p class="secondary-text mt-2">Carregando notas...</p>
-                        </div>
-                        
-                        <div v-else-if="grades.selectedBimestre && grades.selectedMateria" class="overflow-x-auto">
-                            <table class="w-full text-left">
-                                <thead class="border-b border-gray-700">
-                                    <tr>
-                                        <th class="p-3">Aluno</th>
-                                        <th class="p-3 text-center">L1</th>
-                                        <th class="p-3 text-center">L2</th>
-                                        <th class="p-3 text-center">L3</th>
-                                        <th class="p-3 text-center">L4</th>
-                                        <th class="p-3 text-center font-bold accent-text">MÉDIA</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    <tr v-for="member in members" :key="member.uid" class="border-b border-gray-800 hover:bg-gray-800/50">
-                                        <td class="p-3">{{ member.email }}</td>
-                                        <td class="p-3 text-center"><input type="number" step="0.1" min="0" max="10" class="table-input" v-model.number="grades.sheet[member.uid].l1"></td>
-                                        <td class="p-3 text-center"><input type="number" step="0.1" min="0" max="10" class="table-input" v-model.number="grades.sheet[member.uid].l2"></td>
-                                        <td class="p-3 text-center"><input type="number" step="0.1" min="0" max="10" class="table-input" v-model.number="grades.sheet[member.uid].l3"></td>
-                                        <td class="p-3 text-center"><input type="number" step="0.1" min="0" max="10" class="table-input" v-model.number="grades.sheet[member.uid].l4"></td>
-                                        <td class="p-3 text-center font-bold" :class="calculateAverage(member.uid) < 6 ? 'text-red-400' : 'text-green-400'">
-                                            {{ calculateAverage(member.uid) }}
-                                        </td>
-                                    </tr>
-                                </tbody>
-                            </table>
-                            <div class="mt-6 text-right">
-                                <button @click="saveGrades" class="btn">
-                                    <i class="fas fa-save mr-2"></i> Salvar Notas
-                                </button>
-                            </div>
-                        </div>
+<!-- Portal Aluno -->
+<section id="member" class="page">
+<h2>Portal do Aluno</h2>
+<p>Bem-vindo, <span id="memberName"></span>!</p>
 
-                        <div v-else class="text-center p-8 border-2 border-dashed border-gray-700 rounded-lg">
-                            <p class="secondary-text">Por favor, selecione um bimestre e uma matéria para começar a lançar as notas.</p>
-                        </div>
-                    </div>
-                </div>
-            </main>
-        </div>
+<h3>Notas</h3>
+<label>Bimestre:</label>
+<select id="memberBim" onchange="renderGrades()">
+<option value="1">1</option><option value="2">2</option><option value="3">3</option><option value="4">4</option>
+</select>
+<table id="gradesTable">
+<tr><th>Matéria</th><th>L1</th><th>L2</th><th>L3</th><th>L4</th><th>Média</th></tr>
+</table>
 
-        <!-- Modal Adicionar/Editar Membro -->
-        <div v-if="showAddMemberModal || showEditMemberModal" class="modal-overlay">
-            <div class="card w-full max-w-lg p-6">
-                <h3 class="text-xl font-bold mb-4 accent-text">{{ isEditingMember ? 'Editar Membro' : 'Adicionar Novo Membro' }}</h3>
-                <form @submit.prevent="isEditingMember ? updateMember() : addMember()">
-                    <div class="mb-4">
-                        <label for="memberEmail" class="block text-sm font-medium secondary-text">Email do Aluno</label>
-                        <input type="email" v-model="memberForm.email" id="memberEmail" class="input-field mt-1" required>
-                    </div>
-                    <div class="mb-6">
-                        <label for="memberPassword" class="block text-sm font-medium secondary-text">Senha</label>
-                        <input type="password" v-model="memberForm.password" id="memberPassword" class="input-field mt-1" :placeholder="isEditingMember ? 'Deixe em branco para não alterar' : ''" :required="!isEditingMember">
-                    </div>
-                    <div class="flex justify-end gap-4">
-                        <button type="button" @click="closeMemberModal" class="btn btn-secondary">Cancelar</button>
-                        <button type="submit" class="btn">Salvar</button>
-                    </div>
-                </form>
-            </div>
-        </div>
-        
-        <!-- Modal de Confirmação de Remoção -->
-        <div v-if="showRemoveMemberModal" class="modal-overlay">
-            <div class="card w-full max-w-md p-6 text-center">
-                <i class="fas fa-exclamation-triangle text-4xl text-red-500 mb-4"></i>
-                <h3 class="text-xl font-bold mb-2">Confirmar Remoção</h3>
-                <p class="secondary-text mb-6">Você tem certeza que deseja remover o membro <strong class="text-white">{{ memberToRemove.email }}</strong>? Esta ação não pode ser desfeita.</p>
-                <div class="flex justify-center gap-4">
-                    <button @click="showRemoveMemberModal = false" class="btn btn-secondary">Cancelar</button>
-                    <button @click="removeMember" class="btn bg-red-600 hover:bg-red-700 text-white">Remover</button>
-                </div>
-            </div>
-        </div>
-    </div>
+<h3>Ocorrências</h3>
+<table id="incidentsTable">
+<tr><th>Matéria</th><th>Tipo</th></tr>
+</table>
+</section>
 
-    <!-- Vue.js -->
-    <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
- 
-        // Import the functions you need from the SDKs you need
-import { initializeApp } from "firebase/app";
-import { getAnalytics } from "firebase/analytics";
-// TODO: Add SDKs for Firebase products that you want to use
-// https://firebase.google.com/docs/web/setup#available-libraries
+<!-- Portal Admin -->
+<section id="admin" class="page">
+<h2>Portal Admin</h2>
+<h3>Membros</h3>
+<label>Email:</label><input type="text" id="newMemberEmail">
+<label>Nome:</label><input type="text" id="newMemberName">
+<label>Senha:</label><input type="password" id="newMemberPass">
+<button onclick="addMember()">Adicionar Membro</button>
 
-// Your web app's Firebase configuration
-// For Firebase JS SDK v7.20.0 and later, measurementId is optional
-const firebaseConfig = {
-  apiKey: "AIzaSyCNArOyre3ajgeF85SyZy9942dJdj6E99c",
-  authDomain: "rat2025-8ada5.firebaseapp.com",
-  projectId: "rat2025-8ada5",
-  storageBucket: "rat2025-8ada5.firebasestorage.app",
-  messagingSenderId: "133835739418",
-  appId: "1:133835739418:web:8f3acd8575e5a91a24dca3",
-  measurementId: "G-WDPGF2T7EP"
-};
+<ul id="membersList"></ul>
 
-// Initialize Firebase
-const app = initializeApp(firebaseConfig);
-const analytics = getAnalytics(app);
+<h3>Lançar Notas</h3>
+<label>Bimestre:</label>
+<select id="adminBim"></select>
+<label>Matéria:</label>
+<select id="adminSubj">
+<option>Matemática</option><option>Português</option><option>Ciências</option>
+</select>
+<table id="adminGradesTable">
+<tr><th>Aluno</th><th>L1</th><th>L2</th><th>L3</th><th>L4</th><th>Média</th></tr>
+</table>
+<button onclick="saveGrades()">Salvar Notas</button>
 
-        const app = initializeApp(firebaseConfig);
-        const auth = getAuth(app);
-        const db = getFirestore(app);
+<h3>Lançar Ocorrência</h3>
+<label>Aluno:</label><select id="incidentStudent"></select>
+<label>Matéria:</label><select id="incidentSubj">
+<option>Matemática</option><option>Português</option><option>Ciências</option>
+</select>
+<label>Tipo:</label>
+<select id="incidentType">
+<option>Não fez lista</option><option>Entregou fora do prazo (I)</option>
+<option>Entregou fora do prazo (II)</option><option>Lista incompleta</option>
+</select>
+<button onclick="addIncident()">Salvar Ocorrência</button>
+</section>
 
-        const ADMIN_EMAIL = "henriquefnci@gmail.com";
+<script>
+// Navegação
+function showPage(id){
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+}
 
-        const { createApp } = Vue
+// Dados de demo
+let users = [
+  {email:"henriquefnci@gmail.com",pass:"Henrique@4",name:"Professor",role:"admin"},
+  {email:"aluno1@gmail.com",pass:"123",name:"Pedro",role:"member"}
+];
 
-        createApp({
-            data() {
-                return {
-                    currentView: 'loading',
-                    activeTab: 'dashboard',
-                    user: { isLoggedIn: false, isAdmin: false, email: null, uid: null },
-                    loginForm: { email: '', password: '' },
-                    notification: { message: '', type: 'success' },
-                    members: [],
-                    showAddMemberModal: false,
-                    showEditMemberModal: false,
-                    showRemoveMemberModal: false,
-                    isEditingMember: false,
-                    memberForm: { email: '', password: '', uid: null },
-                    memberToRemove: null,
-                    // Dados para Notas
-                    bimestres: [1, 2, 3, 4],
-                    materias: ['Português', 'Artes', 'Literatura', 'Redação', 'Matemática', 'Complementos', 'História', 'Geografia', 'Filosofia', 'Física', 'Química', 'Biologia'],
-                    grades: {
-                        selectedBimestre: '',
-                        selectedMateria: '',
-                        sheet: {}, // { 'uidAluno': { l1: 10, l2: 8, ... } }
-                        isLoading: false,
-                    }
-                }
-            },
-            watch: {
-                'grades.selectedBimestre'(newVal, oldVal) {
-                    if (newVal && this.grades.selectedMateria) this.fetchGrades();
-                },
-                'grades.selectedMateria'(newVal, oldVal) {
-                    if (newVal && this.grades.selectedBimestre) this.fetchGrades();
-                }
-            },
-            mounted() {
-                this.checkAuthState();
-            },
-            methods: {
-                showNotification(message, type = 'success', duration = 3000) {
-                    this.notification.message = message;
-                    this.notification.type = type;
-                    setTimeout(() => { this.notification.message = ''; }, duration);
-                },
-                checkAuthState() {
-                    onAuthStateChanged(auth, async (user) => {
-                        if (user) {
-                            this.user.isLoggedIn = true;
-                            this.user.email = user.email;
-                            this.user.uid = user.uid;
-                            this.user.isAdmin = (user.email === ADMIN_EMAIL);
-                            if (this.user.isAdmin) {
-                                this.currentView = 'admin';
-                                await this.fetchMembers();
-                            } else {
-                                this.currentView = 'student';
-                            }
-                        } else {
-                            Object.assign(this.user, { isLoggedIn: false, isAdmin: false, email: null, uid: null });
-                            this.currentView = 'login';
-                        }
-                    });
-                },
-                async login() {
-                    if(this.loginForm.email === ADMIN_EMAIL && this.loginForm.password === "Henrique@4") {
-                        try {
-                            await signInWithEmailAndPassword(auth, this.loginForm.email, this.loginForm.password);
-                        } catch (error) {
-                            if (error.code === 'auth/user-not-found') {
-                                try {
-                                    await createUserWithEmailAndPassword(auth, this.loginForm.email, this.loginForm.password);
-                                } catch (creationError) {
-                                    this.showNotification(`Erro ao criar admin: ${creationError.message}`, 'error'); return;
-                                }
-                            } else {
-                                 this.showNotification(`Erro no login: ${error.message}`, 'error'); return;
-                            }
-                        }
-                    } else {
-                         try {
-                            await signInWithEmailAndPassword(auth, this.loginForm.email, this.loginForm.password);
-                        } catch (error) {
-                            this.showNotification(`Erro no login: ${error.message}`, 'error'); return;
-                        }
-                    }
-                    this.loginForm = { email: '', password: '' };
-                },
-                async logout() {
-                    await signOut(auth);
-                },
-                // === MÉTODOS DE ADMIN - MEMBROS ===
-                async fetchMembers() {
-                    if (!this.user.isAdmin) return;
-                    this.members = [];
-                    try {
-                        const usersCollection = collection(db, "users");
-                        const q = query(usersCollection, where("role", "==", "student"));
-                        const querySnapshot = await getDocs(q);
-                        querySnapshot.forEach((doc) => {
-                            this.members.push({ uid: doc.id, ...doc.data() });
-                        });
-                    } catch (error) {
-                        this.showNotification('Erro ao buscar membros.', 'error');
-                        console.error("Error fetching members: ", error);
-                    }
-                },
-                async addMember() {
-                    // Simula a criação adicionando no Firestore para controle.
-                    // A senha NÃO é salva por segurança. O aluno deve se cadastrar.
-                    try {
-                        const userRef = doc(db, 'users', this.memberForm.email);
-                        await setDoc(userRef, { email: this.memberForm.email, role: 'student' });
-                        this.showNotification('Membro adicionado! O aluno precisa se cadastrar com este email.', 'success');
-                        this.closeMemberModal();
-                        this.fetchMembers();
-                    } catch (error) {
-                         this.showNotification(`Erro ao adicionar membro: ${error.message}`, 'error');
-                    }
-                },
-                closeMemberModal() {
-                    this.showAddMemberModal = false;
-                    this.showEditMemberModal = false;
-                    this.isEditingMember = false;
-                    this.memberForm = { email: '', password: '', uid: null };
-                },
-                prepareEditMember(member) {
-                    this.isEditingMember = true;
-                    Object.assign(this.memberForm, { email: member.email, uid: member.uid, password: '' });
-                    this.showEditMemberModal = true;
-                },
-                async updateMember() {
-                    this.showNotification('Funcionalidade de edição (email/senha) requer backend.', 'success');
-                    this.closeMemberModal();
-                },
-                prepareRemoveMember(member) {
-                    this.memberToRemove = member;
-                    this.showRemoveMemberModal = true;
-                },
-                async removeMember() {
-                     try {
-                        await deleteDoc(doc(db, "users", this.memberToRemove.uid));
-                        this.showNotification('Membro removido com sucesso!', 'success');
-                        this.showRemoveMemberModal = false;
-                        this.memberToRemove = null;
-                        this.fetchMembers();
-                    } catch(error) {
-                        this.showNotification(`Erro ao remover membro: ${error.message}`, 'error');
-                    }
-                },
-                // === MÉTODOS DE ADMIN - NOTAS ===
-                async fetchGrades() {
-                    if (!this.grades.selectedBimestre || !this.grades.selectedMateria) return;
-                    this.grades.isLoading = true;
-                    
-                    // 1. Reinicia a planilha com todos os membros
-                    let newSheet = {};
-                    this.members.forEach(member => {
-                        newSheet[member.uid] = { l1: '', l2: '', l3: '', l4: '', docId: null };
-                    });
+let grades = []; // {email,bimestre,subject,L1,L2,L3,L4}
+let incidents = []; // {email,subject,type,bimestre}
+let currentUser = null;
 
-                    // 2. Busca as notas existentes no Firestore
-                    const gradesCollection = collection(db, 'grades');
-                    const q = query(gradesCollection, 
-                        where('bimestre', '==', this.grades.selectedBimestre),
-                        where('materia', '==', this.grades.selectedMateria)
-                    );
-                    const querySnapshot = await getDocs(q);
+// Login
+function login(){
+  const email=document.getElementById('loginEmail').value;
+  const pass=document.getElementById('loginPass').value;
+  const user=users.find(u=>u.email===email && u.pass===pass);
+  const msg=document.getElementById('loginMsg');
+  if(user){
+    currentUser=user;
+    msg.textContent='Login realizado!';
+    if(user.role==='admin') showPage('admin');
+    else showPage('member');
+    renderMember();
+    renderAdmin();
+  } else msg.textContent='Email ou senha incorretos!';
+}
 
-                    // 3. Preenche a planilha com as notas encontradas
-                    querySnapshot.forEach(doc => {
-                        const data = doc.data();
-                        if(newSheet[data.studentUid]) {
-                            newSheet[data.studentUid] = {
-                                l1: data.l1 || '',
-                                l2: data.l2 || '',
-                                l3: data.l3 || '',
-                                l4: data.l4 || '',
-                                docId: doc.id
-                            };
-                        }
-                    });
+// Render Portal Aluno
+function renderMember(){
+  if(!currentUser) return;
+  document.getElementById('memberName').textContent=currentUser.name;
+  const sel=document.getElementById('memberBim');
+  sel.value=sel.value||"1";
+  renderGrades();
+  renderIncidents();
+}
+function renderGrades(){
+  const bim=document.getElementById('memberBim').value;
+  const table=document.getElementById('gradesTable');
+  table.innerHTML="<tr><th>Matéria</th><th>L1</th><th>L2</th><th>L3</th><th>L4</th><th>Média</th></tr>";
+  ["Matemática","Português","Ciências"].forEach(subj=>{
+    const g=grades.find(x=>x.email===currentUser.email && x.bimestre==bim && x.subject===subj);
+    const L1=g?g.L1:'-'; const L2=g?g.L2:'-'; const L3=g?g.L3:'-'; const L4=g?g.L4:'-';
+    const media=(L1!='-'&&L2!='-'&&L3!='-'&&L4!='-')?((+L1+ +L2+ +L3+ +L4)/4).toFixed(1):'-';
+    table.innerHTML+=`<tr><td>${subj}</td><td>${L1}</td><td>${L2}</td><td>${L3}</td><td>${L4}</td><td>${media}</td></tr>`;
+  });
+}
+function renderIncidents(){
+  const bim=document.getElementById('memberBim').value;
+  const table=document.getElementById('incidentsTable');
+  table.innerHTML="<tr><th>Matéria</th><th>Tipo</th></tr>";
+  incidents.filter(i=>i.email===currentUser.email && i.bimestre==bim)
+  .forEach(i=>{
+    table.innerHTML+=`<tr><td>${i.subject}</td><td>${i.type}</td></tr>`;
+  });
+}
 
-                    this.grades.sheet = newSheet;
-                    this.grades.isLoading = false;
-                },
-                calculateAverage(studentUid) {
-                    const studentGrades = this.grades.sheet[studentUid];
-                    if (!studentGrades) return 'N/A';
-                    
-                    const notes = [studentGrades.l1, studentGrades.l2, studentGrades.l3, studentGrades.l4]
-                        .map(n => parseFloat(n))
-                        .filter(n => !isNaN(n) && n >= 0);
+// Render Admin
+function renderAdmin(){
+  // Membros
+  const list=document.getElementById('membersList');
+  list.innerHTML='';
+  users.filter(u=>u.role==='member').forEach(u=>{
+    const li=document.createElement('li');
+    li.textContent=`${u.name} (${u.email})`;
+    list.appendChild(li);
+  });
+  // Select alunos
+  const sel=document.getElementById('incidentStudent');
+  sel.innerHTML='';
+  users.filter(u=>u.role==='member').forEach(u=>{
+    sel.innerHTML+=`<option value="${u.email}">${u.name}</option>`;
+  });
+  // Bimestre admin
+  const bimSel=document.getElementById('adminBim');
+  bimSel.innerHTML='';
+  for(let i=1;i<=4;i++) bimSel.innerHTML+=`<option value="${i}">${i}</option>`;
+  // Tabela notas
+  renderAdminGrades();
+}
+function addMember(){
+  const email=document.getElementById('newMemberEmail').value;
+  const name=document.getElementById('newMemberName').value;
+  const pass=document.getElementById('newMemberPass').value;
+  if(email && pass && name){
+    users.push({email,pass,name,role:'member'});
+    renderAdmin();
+    alert('Membro adicionado!');
+  }
+}
+function renderAdminGrades(){
+  const bim=document.getElementById('adminBim').value;
+  const subj=document.getElementById('adminSubj').value;
+  const table=document.getElementById('adminGradesTable');
+  table.innerHTML="<tr><th>Aluno</th><th>L1</th><th>L2</th><th>L3</th><th>L4</th><th>Média</th></tr>";
+  users.filter(u=>u.role==='member').forEach(u=>{
+    const g=grades.find(x=>x.email===u.email && x.bimestre==bim && x.subject===subj);
+    const L1=g?g.L1:''; const L2=g?g.L2:''; const L3=g?g.L3:''; const L4=g?g.L4:'';
+    const media=(L1&&L2&&L3&&L4)?((+L1+ +L2+ +L3+ +L4)/4).toFixed(1):'';
+    table.innerHTML+=`<tr>
+      <td>${u.name}</td>
+      <td contenteditable="true">${L1}</td>
+      <td contenteditable="true">${L2}</td>
+      <td contenteditable="true">${L3}</td>
+      <td contenteditable="true">${L4}</td>
+      <td>${media}</td>
+    </tr>`;
+  });
+}
+function saveGrades(){
+  const bim=document.getElementById('adminBim').value;
+  const subj=document.getElementById('adminSubj').value;
+  const table=document.getElementById('adminGradesTable');
+  [...table.rows].slice(1).forEach((row,i)=>{
+    const u=users.filter(u=>u.role==='member')[i];
+    const gIndex=grades.findIndex(x=>x.email===u.email && x.bimestre==bim && x.subject===subj);
+    const newG={email:u.email,bimestre:bim,subject:subj,
+      L1:row.cells[1].textContent,L2:row.cells[2].textContent,
+      L3:row.cells[3].textContent,L4:row.cells[4].textContent};
+    if(gIndex>=0) grades[gIndex]=newG;
+    else grades.push(newG);
+  });
+  alert('Notas salvas!');
+  renderGrades();
+}
+function addIncident(){
+  const email=document.getElementById('incidentStudent').value;
+  const subj=document.getElementById('incidentSubj').value;
+  const type=document.getElementById('incidentType').value;
+  const bim=document.getElementById('adminBim').value;
+  incidents.push({email,subject:subj,type,bimestre:bim});
+  alert('Ocorrência adicionada!');
+  renderMember();
+}
 
-                    if (notes.length === 0) return 'N/A';
-                    
-                    const sum = notes.reduce((acc, curr) => acc + curr, 0);
-                    const average = sum / notes.length;
-                    return average.toFixed(1);
-                },
-                async saveGrades() {
-                    try {
-                        const batch = writeBatch(db);
-                        for (const studentUid in this.grades.sheet) {
-                            const gradeData = this.grades.sheet[studentUid];
-                            const student = this.members.find(m => m.uid === studentUid);
-                            
-                            const dataToSave = {
-                                studentUid: studentUid,
-                                studentEmail: student.email,
-                                bimestre: this.grades.selectedBimestre,
-                                materia: this.grades.selectedMateria,
-                                l1: gradeData.l1 === '' ? null : Number(gradeData.l1),
-                                l2: gradeData.l2 === '' ? null : Number(gradeData.l2),
-                                l3: gradeData.l3 === '' ? null : Number(gradeData.l3),
-                                l4: gradeData.l4 === '' ? null : Number(gradeData.l4),
-                            };
-
-                            if (gradeData.docId) {
-                                // Atualiza documento existente
-                                const docRef = doc(db, 'grades', gradeData.docId);
-                                batch.set(docRef, dataToSave, { merge: true });
-                            } else {
-                                // Cria novo documento
-                                const docRef = doc(collection(db, 'grades'));
-                                batch.set(docRef, dataToSave);
-                            }
-                        }
-                        await batch.commit();
-                        this.showNotification('Notas salvas com sucesso!', 'success');
-                        this.fetchGrades(); // Recarrega para obter os docIds
-                    } catch (error) {
-                        console.error("Erro ao salvar notas: ", error);
-                        this.showNotification('Erro ao salvar as notas.', 'error');
-                    }
-                }
-            }
-        }).mount('#app')
-    </script>
+</script>
 </body>
 </html>
-
-
